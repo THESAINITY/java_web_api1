@@ -1,11 +1,7 @@
 package com.setec.controller;
 
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +20,7 @@ import com.setec.dao.PostProductDAO;
 import com.setec.dao.PutProductDAO;
 import com.setec.entities.Product;
 import com.setec.repos.ProductRepo;
+import com.setec.dao.FileStorageService;
 
 @RestController
 @RequestMapping("/api/product")
@@ -32,18 +29,8 @@ public class MyController {
     @Autowired
     private ProductRepo productRepo;
     
-    // Simple method to get upload directory
-    private String getUploadDir() {
-        // Check if we're on Render (production)
-        String databaseUrl = System.getenv("DATABASE_URL");
-        if (databaseUrl != null && databaseUrl.contains("postgres")) {
-            // On Render - use /tmp directory
-            return "/tmp/static";
-        } else {
-            // Local development on Mac - use myApp/static
-            return "myApp/static";
-        }
-    }
+    @Autowired
+    private FileStorageService fileStorageService;
     
     @GetMapping
     public Object getAll() {
@@ -56,17 +43,7 @@ public class MyController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Object postProduct(@ModelAttribute PostProductDAO product) throws Exception {
         
-        String uploadDir = getUploadDir();
-        File dir = new File(uploadDir);
-        if(!dir.exists())
-            dir.mkdirs();
-            
-        var file = product.getFile();
-        String originalFileName = Objects.requireNonNull(file.getOriginalFilename());
-        String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-        String fileName = UUID.randomUUID() + extension;
-        String filePath = Paths.get(uploadDir, fileName).toString();
-        file.transferTo(new File(filePath));
+        String fileName = fileStorageService.storeFile(product.getFile());
         
         Product pro = new Product();
         pro.setName(product.getName());
@@ -103,10 +80,7 @@ public class MyController {
     public Object deleteById(@PathVariable("id")Integer id) {
         var p = productRepo.findById(id);
         if(p.isPresent()) {
-            String uploadDir = getUploadDir();
-            String imagePath = p.get().getImageUrl().replace("/static/", "/");
-            String filePath = uploadDir + imagePath;
-            new File(filePath).delete();
+            fileStorageService.deleteFile(p.get().getImageUrl());
             
             productRepo.delete(p.get());
             return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -126,24 +100,8 @@ public class MyController {
             update.setQty(product.getQty());
             
             if(product.getFile() != null) {
-                String uploadDir = getUploadDir();
-                File dir = new File(uploadDir);
-                if(!dir.exists())
-                    dir.mkdirs();
-                
-                var file = product.getFile();
-                String originalFileName = Objects.requireNonNull(file.getOriginalFilename());
-                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-                String fileName = UUID.randomUUID() + extension;
-                String filePath = Paths.get(uploadDir, fileName).toString();
-                
-                // Delete old file
-                String oldImagePath = update.getImageUrl().replace("/static/", "/");
-                String oldFilePath = uploadDir + oldImagePath;
-                new File(oldFilePath).delete();
-                
-                // Save new file
-                file.transferTo(new File(filePath));
+                fileStorageService.deleteFile(update.getImageUrl());
+                String fileName = fileStorageService.storeFile(product.getFile());
                 update.setImageUrl("/static/" + fileName);
             }
             
@@ -154,5 +112,37 @@ public class MyController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(Map.of("message","Product id = "+id+" not found"));
+    }
+
+    // ADD THIS DEBUG ENDPOINT
+    @GetMapping("/debug/files")
+    public Object debugFiles() {
+        try {
+            String uploadDir = System.getenv("DATABASE_URL") != null ? "/tmp/static" : "myApp/static";
+            java.io.File dir = new java.io.File(uploadDir);
+            
+            Map<String, Object> result = new java.util.HashMap<>();
+            result.put("uploadDir", uploadDir);
+            result.put("exists", dir.exists());
+            result.put("isDirectory", dir.isDirectory());
+            
+            if (dir.exists() && dir.isDirectory()) {
+                java.io.File[] files = dir.listFiles();
+                result.put("fileCount", files != null ? files.length : 0);
+                result.put("files", files != null ? 
+                    java.util.Arrays.stream(files)
+                        .map(file -> Map.of(
+                            "name", file.getName(),
+                            "size", file.length(),
+                            "url", "https://product-web-api.onrender.com/static/" + file.getName()
+                        ))
+                        .collect(java.util.stream.Collectors.toList()) 
+                    : java.util.List.of());
+            }
+            
+            return result;
+        } catch (Exception e) {
+            return Map.of("error", e.getMessage());
+        }
     }
 }
