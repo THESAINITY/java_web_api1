@@ -1,4 +1,4 @@
-package com.setec.dao;  // ← Same package as your DAOs
+package com.setec.dao;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,20 +12,17 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    private String getUploadDir() {
-        String databaseUrl = System.getenv("DATABASE_URL");
-        if (databaseUrl != null && databaseUrl.contains("postgres")) {
-            return "/tmp/static";
-        } else {
-            return "myApp/static";
-        }
+    // Always use the same path - much simpler!
+    public String getUploadDir() {
+        return "myApp/static";
     }
 
     public String storeFile(MultipartFile file) throws IOException {
         String uploadDir = getUploadDir();
         File dir = new File(uploadDir);
         if (!dir.exists()) {
-            dir.mkdirs();
+            boolean created = dir.mkdirs();
+            System.out.println("📁 Directory created: " + created + " at " + dir.getAbsolutePath());
         }
 
         String originalFileName = file.getOriginalFilename();
@@ -34,7 +31,8 @@ public class FileStorageService {
         
         Path filePath = Paths.get(uploadDir, fileName);
         file.transferTo(filePath.toFile());
-
+        
+        System.out.println("💾 File saved: " + filePath.toAbsolutePath());
         return fileName;
     }
 
@@ -43,8 +41,11 @@ public class FileStorageService {
             String uploadDir = getUploadDir();
             String fileName = imageUrl.replace("/static/", "");
             Path filePath = Paths.get(uploadDir, fileName);
-            return filePath.toFile().delete();
+            boolean deleted = filePath.toFile().delete();
+            System.out.println("🗑️ File deleted: " + deleted + " - " + fileName);
+            return deleted;
         } catch (Exception e) {
+            System.out.println("❌ Error deleting file: " + e.getMessage());
             return false;
         }
     }

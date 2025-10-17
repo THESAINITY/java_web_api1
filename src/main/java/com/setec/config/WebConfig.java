@@ -9,11 +9,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve static files from both local and Render directories
+        // Simple configuration - always serve from myApp/static
         registry.addResourceHandler("/static/**")
-                .addResourceLocations(
-                    "file:myApp/static/",  // Local development
-                    "file:/tmp/static/"    // Render production
-                );
+                .addResourceLocations("file:myApp/static/");
     }
 }
