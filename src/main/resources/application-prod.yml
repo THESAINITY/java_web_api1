@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        temp:
+          use_jdbc_metadata_defaults: false
+
+file:
+  upload-dir: /tmp/uploads
+
+logging:
+  level:
+    com.setec: INFO
+    org.hibernate.SQL: WARN

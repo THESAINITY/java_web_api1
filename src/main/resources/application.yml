@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: product-web-api
+  profiles:
+    active: dev
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        id:
+          new_generator_mappings: false
+    open-in-view: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 500MB
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+logging:
+  level:
+    com.setec: DEBUG
