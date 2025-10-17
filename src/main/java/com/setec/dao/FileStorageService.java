@@ -12,9 +12,9 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    // Always use the same path - much simpler!
     public String getUploadDir() {
-        return "myApp/static";
+        // Use /tmp directory which is always writable on Render
+        return "/tmp/myApp/static";
     }
 
     public String storeFile(MultipartFile file) throws IOException {

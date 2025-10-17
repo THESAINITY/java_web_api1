@@ -9,8 +9,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Simple configuration - always serve from myApp/static
+        // Use /tmp directory for static files
         registry.addResourceHandler("/static/**")
-                .addResourceLocations("file:myApp/static/");
+                .addResourceLocations("file:/tmp/myApp/static/");
     }
 }
