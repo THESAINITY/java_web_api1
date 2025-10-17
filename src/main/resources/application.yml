@@ -1,28 +1,37 @@
 spring:
   application:
     name: product-web-api
-  profiles:
-    active: dev
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
+        dialect: ${DB_DIALECT:org.hibernate.dialect.MySQLDialect}
         format_sql: true
-        id:
-          new_generator_mappings: false
     open-in-view: true
   servlet:
     multipart:
       max-file-size: 50MB
       max-request-size: 500MB
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/dbsu6?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
 
 server:
-  port: 8080
+  port: ${PORT:8080}
   error:
     include-message: always
 
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:./uploads}
+
 logging:
   level:
-    com.setec: DEBUG
+    com.setec: INFO
+    org.hibernate.SQL: WARN

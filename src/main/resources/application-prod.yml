@@ -1,8 +1,11 @@
 spring:
+  config:
+    activate:
+      on-profile: production  # This activates the profile
   datasource:
     url: jdbc:postgresql://ep-small-violet-ad60xka9-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
-    username: ${DB_USERNAME:neondb_owner}
-    password: ${DB_PASSWORD:}
+    username: neondb_owner
+    password: npg_PIB9kwwQdI7T
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
