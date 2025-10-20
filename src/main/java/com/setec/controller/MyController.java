@@ -115,34 +115,34 @@ public class MyController {
     }
 
     // ADD THIS DEBUG ENDPOINT
-    @GetMapping("/debug/files")
-    public Object debugFiles() {
-        try {
-            String uploadDir = System.getenv("DATABASE_URL") != null ? "/tmp/static" : "myApp/static";
-            java.io.File dir = new java.io.File(uploadDir);
+    // @GetMapping("/debug/files")
+    // public Object debugFiles() {
+    //     try {
+    //         String uploadDir = System.getenv("DATABASE_URL") != null ? "/tmp/static" : "myApp/static";
+    //         java.io.File dir = new java.io.File(uploadDir);
             
-            Map<String, Object> result = new java.util.HashMap<>();
-            result.put("uploadDir", uploadDir);
-            result.put("exists", dir.exists());
-            result.put("isDirectory", dir.isDirectory());
+    //         Map<String, Object> result = new java.util.HashMap<>();
+    //         result.put("uploadDir", uploadDir);
+    //         result.put("exists", dir.exists());
+    //         result.put("isDirectory", dir.isDirectory());
             
-            if (dir.exists() && dir.isDirectory()) {
-                java.io.File[] files = dir.listFiles();
-                result.put("fileCount", files != null ? files.length : 0);
-                result.put("files", files != null ? 
-                    java.util.Arrays.stream(files)
-                        .map(file -> Map.of(
-                            "name", file.getName(),
-                            "size", file.length(),
-                            "url", "https://product-web-api.onrender.com/static/" + file.getName()
-                        ))
-                        .collect(java.util.stream.Collectors.toList()) 
-                    : java.util.List.of());
-            }
+    //         if (dir.exists() && dir.isDirectory()) {
+    //             java.io.File[] files = dir.listFiles();
+    //             result.put("fileCount", files != null ? files.length : 0);
+    //             result.put("files", files != null ? 
+    //                 java.util.Arrays.stream(files)
+    //                     .map(file -> Map.of(
+    //                         "name", file.getName(),
+    //                         "size", file.length(),
+    //                         "url", "https://product-web-api.onrender.com/static/" + file.getName()
+    //                     ))
+    //                     .collect(java.util.stream.Collectors.toList()) 
+    //                 : java.util.List.of());
+    //         }
             
-            return result;
-        } catch (Exception e) {
-            return Map.of("error", e.getMessage());
-        }
-    }
+        //     return result;
+        // } catch (Exception e) {
+    //         return Map.of("error", e.getMessage());
+    //     }
+    // }
 }
